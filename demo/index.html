@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>bsTimepicker Demo</title>
+
+    <!-- Vendor -->
+    <link rel="stylesheet" href="../vendor/twbs/bootstrap/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-body-tertiary">
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4 p-lg-5">
+                    <h1 class="h3 mb-2">bsTimepicker Demo</h1>
+                    <p class="text-secondary mb-4">
+                        Demo für <code>$.fn.bsTimepicker</code> mit Assets aus <code>vendor/</code> und Plugin aus <code>dist/</code>.
+                    </p>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label for="time24" class="form-label">24h auf Input</label>
+                            <input type="text" id="time24" class="form-control" value="07:15">
+                            <div class="form-text">Initialwert per Value im Input.</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="time12" class="form-label">12h auf Input</label>
+                            <input type="text" id="time12" class="form-control" value="08:45 PM">
+                            <div class="form-text">12h Format mit AM/PM.</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">24h auf Div mit Hidden Field</label>
+                            <div id="timeDiv24"></div>
+                            <div class="form-text">Erzeugt intern ein hidden input mit <code>name="appointment_time"</code>.</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">12h auf Div mit Hidden Field</label>
+                            <div id="timeDiv12"></div>
+                            <div class="form-text">Erzeugt intern ein hidden input mit <code>name="alarm_time"</code>.</div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <button type="button" id="setMorning" class="btn btn-primary">Setze 06:30</button>
+                        <button type="button" id="setEvening" class="btn btn-outline-primary">Setze 09:45 PM</button>
+                        <button type="button" id="showPicker" class="btn btn-outline-secondary">24h Picker öffnen</button>
+                        <button type="button" id="readValues" class="btn btn-success">Werte auslesen</button>
+                    </div>
+
+                    <div class="alert alert-light border mb-0">
+                        <div class="fw-semibold mb-2">Ausgabe</div>
+                        <pre id="output" class="mb-0 small" style="white-space: pre-wrap;">Noch keine Aktion.</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vendor -->
+<script src="../vendor/components/jquery/jquery.min.js"></script>
+<script src="../vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Plugin -->
+<script src="../dist/bs-timepicker.js"></script>
+
+<script>
+    (function ($) {
+        function writeOutput(title, payload) {
+            $("#output").text(title + "\n\n" + JSON.stringify(payload, null, 2));
+        }
+
+        $(function () {
+            $("#time24").bsTimepicker({
+                format: "24h"
+            });
+
+            $("#time12").bsTimepicker({
+                format: "12h"
+            });
+
+            $("#timeDiv24").bsTimepicker({
+                format: "24h",
+                defaultTime: "13:20",
+                nameField: "appointment_time"
+            });
+
+            $("#timeDiv12").bsTimepicker({
+                format: "12h",
+                defaultTime: "07:10 AM",
+                nameField: "alarm_time"
+            });
+
+            $("#setMorning").on("click", function () {
+                $("#time24").bsTimepicker("setTime", "06:30");
+                $("#timeDiv24").bsTimepicker("setTime", "06:30");
+                writeOutput("06:30 gesetzt", {
+                    input24: $("#time24").bsTimepicker("getTime"),
+                    div24: $("#timeDiv24").bsTimepicker("getTime")
+                });
+            });
+
+            $("#setEvening").on("click", function () {
+                $("#time12").bsTimepicker("setTime", "09:45 PM");
+                $("#timeDiv12").bsTimepicker("setTime", "09:45 PM");
+                writeOutput("09:45 PM gesetzt", {
+                    input12: $("#time12").bsTimepicker("getTime"),
+                    div12: $("#timeDiv12").bsTimepicker("getTime")
+                });
+            });
+
+            $("#showPicker").on("click", function () {
+                $("#time24").bsTimepicker("show");
+            });
+
+            $("#readValues").on("click", function () {
+                writeOutput("Aktuelle Werte", {
+                    input24: $("#time24").bsTimepicker("getTime"),
+                    input12: $("#time12").bsTimepicker("getTime"),
+                    div24: $("#timeDiv24").bsTimepicker("getTime"),
+                    div12: $("#timeDiv12").bsTimepicker("getTime")
+                });
+            });
+
+            $("#time24, #time12, #timeDiv24, #timeDiv12").on("timeChange.bsTimepicker", function (e, data) {
+                $("#output").text(
+                    "timeChange.bsTimepicker auf #" + (this.id || "ohne-id") + "\n\n" + JSON.stringify(data, null, 2)
+                );
+            });
+        });
+    })(jQuery);
+</script>
+</body>
+</html>
