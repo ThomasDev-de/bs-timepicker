@@ -1,5 +1,5 @@
 /**
- * @version 1.0.0
+ * @version 1.0.1
  */
 (function ($) {
     "use strict";
@@ -45,15 +45,32 @@
 
         const str = String(value).trim().toUpperCase();
 
-        let m = str.match(/^(\d{1,2}):(\d{2})$/);
+        let m;
+
+        // 24h: HH:mm
+        m = str.match(/^(\d{1,2}):(\d{2})$/);
         if (m) {
             const h = parseInt(m[1], 10);
             const min = parseInt(m[2], 10);
+
             if (h >= 0 && h <= 23 && min >= 0 && min <= 59) {
                 return { hour24: h, minute: min };
             }
         }
 
+        // 24h: HH:mm:ss
+        m = str.match(/^(\d{1,2}):(\d{2}):(\d{2})$/);
+        if (m) {
+            const h = parseInt(m[1], 10);
+            const min = parseInt(m[2], 10);
+            const sec = parseInt(m[3], 10);
+
+            if (h >= 0 && h <= 23 && min >= 0 && min <= 59 && sec >= 0 && sec <= 59) {
+                return { hour24: h, minute: min };
+            }
+        }
+
+        // 12h: h:mm AM/PM
         m = str.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/);
         if (m) {
             let h = parseInt(m[1], 10);
@@ -66,6 +83,26 @@
                 } else {
                     h = h === 12 ? 12 : h + 12;
                 }
+
+                return { hour24: h, minute: min };
+            }
+        }
+
+        // 12h: h:mm:ss AM/PM
+        m = str.match(/^(\d{1,2}):(\d{2}):(\d{2})\s*(AM|PM)$/);
+        if (m) {
+            let h = parseInt(m[1], 10);
+            const min = parseInt(m[2], 10);
+            const sec = parseInt(m[3], 10);
+            const meridiem = m[4];
+
+            if (h >= 1 && h <= 12 && min >= 0 && min <= 59 && sec >= 0 && sec <= 59) {
+                if (meridiem === "AM") {
+                    h = h === 12 ? 0 : h;
+                } else {
+                    h = h === 12 ? 12 : h + 12;
+                }
+
                 return { hour24: h, minute: min };
             }
         }
