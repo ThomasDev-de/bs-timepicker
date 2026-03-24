@@ -1,5 +1,5 @@
 /**
- * @version 1.0.1
+ * @version 1.0.2
  */
 (function ($) {
     "use strict";
@@ -235,7 +235,7 @@
         }
 
         const html =
-            `<div class="dropdown bs-timepicker-dropdown d-inline-block">
+            `<div class="dropdown bs-timepicker-dropdown d-inline-block" style="${widthStyle}">
                 <button type="button"
                         class="bs-timepicker-trigger ${this.options.btnClass}"
                         style="${widthStyle}"
