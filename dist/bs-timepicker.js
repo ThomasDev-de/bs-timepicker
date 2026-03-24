@@ -1,3 +1,6 @@
+/**
+ * @version 1.0.0
+ */
 (function ($) {
     "use strict";
 
@@ -7,11 +10,16 @@
         format: "24h",
         defaultTime: null,
         nameField: null,
-        placeholder: "Zeit wählen",
-        title: "Zeit auswählen",
+        title: "Select time",
         closeOnSelect: false,
         btnClass: "btn btn-outline-secondary",
-        btnWidth: null
+        btnWidth: null,
+        btnEmptyText: "Select time",
+        icons: {
+            trigger: "bi bi-clock",
+            cancel: "bi bi-x-lg",
+            ok: "bi bi-check-lg"
+        }
     };
 
     function pad(num) {
@@ -95,7 +103,15 @@
         }
         return h === 12 ? 12 : h + 12;
     }
+    BsTimepicker.prototype._renderTriggerLabel = function (value) {
+        const text = value == null || value === "" ? this.options.btnEmptyText : value;
 
+        if (this.$triggerText && this.$triggerText.length) {
+            this.$triggerText.text(text);
+        } else if (this.$trigger && this.$trigger.length) {
+            this.$trigger.text(text);
+        }
+    };
     function BsTimepicker(element, options) {
         this.$root = $(element);
         this.options = $.extend({}, DEFAULTS, options);
@@ -112,6 +128,7 @@
         this.view = "hour";
         this.isOpen = false;
 
+        this.$triggerText = null;
         this.$dropdownWrap = null;
         this.$panel = null;
         this.$trigger = null;
@@ -134,18 +151,26 @@
         this._initBootstrapDropdown();
         this._bindBase();
 
-        const initial = parseTime(this.options.defaultTime) ||
-            parseTime(rawInitial) ||
-            { hour24: 12, minute: 0 };
+        const parsedInitial = parseTime(this.options.defaultTime) || parseTime(rawInitial);
 
-        this.state = {
-            hour24: initial.hour24,
-            minute: initial.minute
+        this.state = parsedInitial ? {
+            hour24: parsedInitial.hour24,
+            minute: parsedInitial.minute
+        } : {
+            hour24: 12,
+            minute: 0
         };
 
-        this._syncToField(false);
+        if (parsedInitial) {
+            this._syncToField(false);
+        } else {
+            this._renderTriggerLabel("");
+            this._writeRawValue("");
+        }
+
         this._refreshHeader();
         this._renderDial();
+        this.$root.trigger("init.bs.timepicker", [this.getTime()]);
     }
 
     BsTimepicker.prototype._readInitialRawValue = function () {
@@ -167,6 +192,10 @@
     BsTimepicker.prototype._render = function () {
         const panelId = `bs-timepicker-panel-${this.uid}`;
         const widthStyle = this.options.btnWidth != null ? `width:${this.options.btnWidth};` : "";
+        let title = "";
+        if (this.options.hasOwnProperty('title') && this.options.title !== null && this.options.title !== "") {
+            title = `<div class="small d-block text-center text-body-secondary mb-2">${this.options.title}</div>`;
+        }
 
         const html =
             `<div class="dropdown bs-timepicker-dropdown d-inline-block">
@@ -176,30 +205,34 @@
                         data-bs-toggle="dropdown"
                         data-bs-auto-close="outside"
                         aria-expanded="false">
+                    <span class="d-inline-flex align-items-center gap-2">
+                        <i class="bs-tp-trigger-icon ${this.options.icons.trigger}"></i>
+                        <span class="bs-tp-trigger-text"></span>
+                    </span>
                 </button>
 
                 <div id="${panelId}"
                      class="dropdown-menu p-3 border-0 shadow rounded-4 bg-body"
                      style="width:360px;max-width:calc(100vw - 24px);">
                     
-                    <div class="small text-body-secondary mb-2">${this.options.title}</div>
+                    ${title}
 
-                    <div class="d-flex align-items-center justify-content-center mb-3">
+                    <div class="d-flex align-items-center justify-content-center mb-1">
                         <div class="d-flex align-items-center">
                             <button type="button"
                                     class="bs-tp-select-hour btn border-0 rounded-4 d-flex align-items-center justify-content-center"
-                                    style="width:68px;height:84px;padding:0;font-size:2rem;line-height:1;letter-spacing:-0.04em;box-shadow:none;">
+                                    style="width:68px;height:54px;padding:0;font-size:2rem;line-height:1;letter-spacing:-0.04em;box-shadow:none;">
                                 07
                             </button>
 
                             <div class="d-flex align-items-center justify-content-center text-body"
-                                 style="width:18px;height:84px;font-size:2.8rem;line-height:1;">
+                                 style="width:18px;height:84px;font-size:1.8rem;line-height:1;">
                                 :
                             </div>
 
                             <button type="button"
                                     class="bs-tp-select-minute btn border-0 rounded-4 d-flex align-items-center justify-content-center"
-                                    style="width:68px;height:84px;padding:0;font-size:2rem;line-height:1;letter-spacing:-0.04em;box-shadow:none;">
+                                    style="width:68px;height:54px;padding:0;font-size:2rem;line-height:1;letter-spacing:-0.04em;box-shadow:none;">
                                 00
                             </button>
                         </div>
@@ -211,7 +244,7 @@
                          style="width:280px;height:280px;overflow:hidden;touch-action:none;background:rgba(0,0,0,.035);">
                         
                         <div class="bs-tp-hand position-absolute top-50 start-50"
-                             style="height:2px;transform-origin:0 50%;background:var(--bs-primary);z-index:1;transition:transform 120ms ease,width 120ms ease;">
+                             style="height:2px;width:0;transform:translateY(-50%);transform-origin:0 50%;background:var(--bs-primary);z-index:1;pointer-events:none;transition:transform 120ms ease,width 120ms ease;">
                         </div>
 
                         <div class="bs-tp-center-dot position-absolute top-50 start-50 translate-middle rounded-circle"
@@ -225,13 +258,13 @@
                         <button type="button"
                                 class="btn btn-link text-decoration-none p-0 bs-tp-cancel"
                                 style="box-shadow:none;">
-                            Abbrechen
+                            <i class="${this.options.icons.cancel}"></i>
                         </button>
 
                         <button type="button"
                                 class="btn btn-link text-decoration-none p-0 bs-tp-ok"
                                 style="box-shadow:none;">
-                            OK
+                            <i class="${this.options.icons.ok}"></i>
                         </button>
                     </div>
                 </div>
@@ -239,6 +272,7 @@
 
         this.$dropdownWrap = $(html);
         this.$trigger = this.$dropdownWrap.find(".bs-timepicker-trigger");
+        this.$triggerText = this.$trigger.find(".bs-tp-trigger-text");
         this.$panel = this.$dropdownWrap.find(".dropdown-menu");
 
         this.$hourBtn = this.$panel.find(".bs-tp-select-hour");
@@ -303,9 +337,26 @@
             }
 
             if (originalText && !this.options.defaultTime) {
-                this.$trigger.text(originalText);
+                if (!parseTime(originalText)) {
+                    this.options.btnEmptyText = originalText;
+                }
             }
         }
+    };
+
+    BsTimepicker.prototype.val = function (value) {
+        if (arguments.length === 0) {
+            const raw = this._readRawValue();
+            return raw == null || raw === "" ? null : raw;
+        }
+
+        if (value == null || value === "") {
+            this._writeRawValue("");
+            this._renderTriggerLabel("");
+            return this;
+        }
+
+        return this.setTime(value);
     };
 
     BsTimepicker.prototype._initBootstrapDropdown = function () {
@@ -321,13 +372,37 @@
             autoClose: "outside"
         });
 
+        this.$trigger.on(`show.bs.dropdown.${PLUGIN_NAME}`, function () {
+            self.$root.trigger("show.bs.timepicker", [self.getTime()]);
+        });
+
         this.$trigger.on(`shown.bs.dropdown.${PLUGIN_NAME}`, function () {
             self.isOpen = true;
+            self.$root.trigger("shown.bs.timepicker", [self.getTime()]);
+        });
+
+        this.$trigger.on(`hide.bs.dropdown.${PLUGIN_NAME}`, function () {
+            self.$root.trigger("hide.bs.timepicker", [self.getTime()]);
         });
 
         this.$trigger.on(`hidden.bs.dropdown.${PLUGIN_NAME}`, function () {
             self.isOpen = false;
+            self.$root.trigger("hidden.bs.timepicker", [self.getTime()]);
         });
+    };
+
+    BsTimepicker.prototype._triggerChangeEvents = function (previousState) {
+        const current = this.getTime();
+
+        this.$root.trigger("change.bs.timepicker", [current]);
+
+        if (!previousState || previousState.hour24 !== this.state.hour24) {
+            this.$root.trigger("changeHour.bs.timepicker", [current]);
+        }
+
+        if (!previousState || previousState.minute !== this.state.minute) {
+            this.$root.trigger("changeMinutes.bs.timepicker", [current]);
+        }
     };
 
     BsTimepicker.prototype._renderMeridiem = function () {
@@ -380,18 +455,28 @@
 
         this.$panel.on(`click.${PLUGIN_NAME}`, ".bs-tp-am", function (e) {
             e.preventDefault();
+
+            const previousState = {
+                hour24: self.state.hour24,
+                minute: self.state.minute
+            };
+
             const h12 = parseInt(displayHour(self.state.hour24, "12h"), 10);
             self.state.hour24 = makeHour24From12(h12, "AM");
             self._refreshHeader();
-            self._syncToField(false);
+            self._syncToField(true, previousState);
         });
 
         this.$panel.on(`click.${PLUGIN_NAME}`, ".bs-tp-pm", function (e) {
             e.preventDefault();
+            const previousState = {
+                hour24: self.state.hour24,
+                minute: self.state.minute
+            };
             const h12 = parseInt(displayHour(self.state.hour24, "12h"), 10);
             self.state.hour24 = makeHour24From12(h12, "PM");
             self._refreshHeader();
-            self._syncToField(false);
+            self._syncToField(false, previousState);
         });
 
         this.$panel.find(".bs-tp-cancel").on(`click.${PLUGIN_NAME}`, function (e) {
@@ -416,6 +501,10 @@
         this.$dial.off(`.${PLUGIN_NAME}.pointer`);
 
         this.$dial.on(`pointerdown.${PLUGIN_NAME}.pointer`, function (e) {
+            if ($(e.target).closest("[data-value]").length) {
+                return;
+            }
+
             e.preventDefault();
 
             self._pointerDragging = true;
@@ -461,6 +550,11 @@
         const result = this._getDialValueFromPoint(e);
         if (!result) return;
 
+        const previousState = {
+            hour24: this.state.hour24,
+            minute: this.state.minute
+        };
+
         if (this.view === "hour") {
             if (this.options.format === "12h") {
                 const meridiem = getMeridiem(this.state.hour24);
@@ -471,7 +565,7 @@
 
             this._refreshHeader();
             this._renderDial();
-            this._syncToField(false);
+            this._syncToField(false, previousState);
 
             if (finalize) {
                 const self = this;
@@ -485,7 +579,7 @@
             this.state.minute = result.value;
             this._refreshHeader();
             this._renderDial();
-            this._syncToField(true);
+            this._syncToField(true, previousState);
         }
     };
 
@@ -615,7 +709,8 @@
                 width: "20px",
                 height: "20px",
                 transform: "translateY(-50%)",
-                background: "var(--bs-primary)"
+                background: "var(--bs-primary)",
+                pointerEvents: "none"
             });
 
             self.$hand.append($tip);
@@ -626,7 +721,7 @@
 
             const $el = $("<button>", {
                 type: "button",
-                class: config.active ? "position-absolute border-0 rounded-circle text-white" : "position-absolute border-0 bg-transparent",
+                class: "position-absolute border-0 rounded-circle",
                 text: config.label,
                 "data-value": config.value
             }).css({
@@ -638,11 +733,31 @@
                 padding: 0,
                 lineHeight: config.inner ? "34px" : "40px",
                 fontSize: config.inner ? "0.82rem" : "0.95rem",
-                background: config.active ? "var(--bs-primary)" : "transparent",
-                color: config.active ? "#fff" : "var(--bs-body-color)",
                 boxShadow: "none",
                 outline: "none",
                 zIndex: 2
+            });
+
+            $el[0].style.setProperty(
+                "background-color",
+                config.active ? "var(--bs-primary)" : "transparent",
+                "important"
+            );
+
+            $el[0].style.setProperty(
+                "color",
+                config.active ? "#ffffff" : "var(--bs-body-color)",
+                "important"
+            );
+
+            $el.on(`pointerdown.${PLUGIN_NAME}`, function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+
+            $el.on(`pointerup.${PLUGIN_NAME}`, function (e) {
+                e.preventDefault();
+                e.stopPropagation();
             });
 
             $el.on(`click.${PLUGIN_NAME}`, function (e) {
@@ -650,18 +765,35 @@
                 e.stopPropagation();
 
                 const value = parseInt($(this).attr("data-value"), 10);
+                const previousState = {
+                    hour24: self.state.hour24,
+                    minute: self.state.minute
+                };
 
                 if (self.view === "hour") {
+                    let nextHour24;
+
                     if (self.options.format === "12h") {
                         const meridiem = getMeridiem(self.state.hour24);
-                        self.state.hour24 = makeHour24From12(value, meridiem);
+                        nextHour24 = makeHour24From12(value, meridiem);
                     } else {
-                        self.state.hour24 = value;
+                        nextHour24 = value;
                     }
 
+                    self.state.hour24 = nextHour24;
                     self._refreshHeader();
-                    self._renderDial();
-                    self._syncToField(false);
+                    self._syncToField(false, previousState);
+
+                    if (self.options.format === "12h") {
+                        const active12 = parseInt(displayHour(self.state.hour24, "12h"), 10);
+                        setHand(active12 % 12, 12, outerRadius);
+                    } else {
+                        if (self.state.hour24 < 12) {
+                            setHand(self.state.hour24, 12, outerRadius);
+                        } else {
+                            setHand(self.state.hour24 - 12, 12, innerRadius);
+                        }
+                    }
 
                     setTimeout(function () {
                         self.view = "minute";
@@ -671,14 +803,17 @@
                 } else {
                     self.state.minute = value;
                     self._refreshHeader();
-                    self._renderDial();
-                    self._syncToField(true);
+                    self._syncToField(true, previousState);
 
-                    if (self.options.closeOnSelect) {
-                        setTimeout(function () {
+                    setHand(self.state.minute / 5, 12, outerRadius);
+
+                    setTimeout(function () {
+                        self._renderDial();
+
+                        if (self.options.closeOnSelect) {
                             self.hide();
-                        }, 120);
-                    }
+                        }
+                    }, 120);
                 }
             });
 
@@ -752,36 +887,61 @@
 
     BsTimepicker.prototype._readRawValue = function () {
         if (this.$valueField && this.$valueField.length) {
-            return this.$valueField.val() || null;
+            const val = this.$valueField.val();
+            return val == null || val === "" ? null : val;
+        }
+
+        if (this.$triggerText && this.$triggerText.length) {
+            const text = $.trim(this.$triggerText.text());
+            return text === "" || text === this.options.btnEmptyText ? null : text;
         }
 
         if (this.$trigger && this.$trigger.length) {
-            return $.trim(this.$trigger.text()) || null;
+            const text = $.trim(this.$trigger.text());
+            return text === "" || text === this.options.btnEmptyText ? null : text;
         }
 
         return null;
     };
 
     BsTimepicker.prototype._writeRawValue = function (value) {
-        if (this.$valueField && this.$valueField.length) {
-            this.$valueField.val(value).trigger("change");
+        let rawValue = value;
+
+        if (value != null && value !== "") {
+            rawValue = formatTime(this.state.hour24, this.state.minute, "24h");
         }
 
-        this.$root.data("time", value);
+        if (this.$valueField && this.$valueField.length) {
+            this.$valueField.val(rawValue).trigger("change");
+        }
+
+        this.$root.data("time", rawValue);
         this.$root.trigger("change");
     };
 
-    BsTimepicker.prototype._syncToField = function (triggerSelectedEvent) {
+    BsTimepicker.prototype._disableHandTransition = function () {
+        if (!this.$hand || !this.$hand.length) return;
+        this.$hand.css("transition", "none");
+    };
+
+    BsTimepicker.prototype._enableHandTransition = function () {
+        if (!this.$hand || !this.$hand.length) return;
+        this.$hand.css("transition", "transform 120ms ease,width 120ms ease");
+    };
+
+    BsTimepicker.prototype._syncToField = function (triggerSelectedEvent, previousState) {
         const value = formatTime(this.state.hour24, this.state.minute, this.options.format);
 
-        if (this.$trigger && this.$trigger.length) {
-            this.$trigger.text(value);
-        }
-
+        this._renderTriggerLabel(value);
         this._writeRawValue(value);
 
         if (triggerSelectedEvent) {
-            this.$root.trigger("timeChange.bsTimepicker", [this.getTime()]);
+            const payload = this.getTime();
+            this.$root.trigger("timeChange.bsTimepicker", [payload]);
+
+            if (typeof this._triggerChangeEvents === "function") {
+                this._triggerChangeEvents(previousState);
+            }
         }
     };
 
@@ -804,14 +964,26 @@
     };
 
     BsTimepicker.prototype.setTime = function (value) {
+        if (value == null || value === "") {
+            this._writeRawValue("");
+            this._renderTriggerLabel("");
+            this.$root.trigger("change.bs.timepicker", [""]);
+            return this;
+        }
+
         const parsed = parseTime(value);
         if (!parsed) return this;
+
+        const previousState = {
+            hour24: this.state.hour24,
+            minute: this.state.minute
+        };
 
         this.state.hour24 = parsed.hour24;
         this.state.minute = parsed.minute;
         this._refreshHeader();
         this._renderDial();
-        this._syncToField(true);
+        this._syncToField(true, previousState);
 
         return this;
     };

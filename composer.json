@@ -1,16 +1,26 @@
 {
   "name": "webcito/bs-timepicker",
-  "description": "description",
+  "description": "A jQuery timepicker plugin with a Bootstrap 5 styled trigger and dropdown UI.",
+  "type": "library",
   "minimum-stability": "stable",
   "license": "proprietary",
+  "keywords": [
+    "jquery",
+    "bootstrap",
+    "bootstrap-5",
+    "timepicker",
+    "time-picker",
+    "ui"
+  ],
   "authors": [
     {
-      "name": "thomas",
-      "email": "email@example.com"
+      "name": "Thomas Kirsch",
+      "email": "t.kirsch@webcito.de"
     }
   ],
   "require": {
     "components/jquery": "^3.6",
-    "twbs/bootstrap": "v5.3.8"
+    "twbs/bootstrap": "^5.0",
+    "twbs/bootstrap-icons": "^1.0"
   }
 }
