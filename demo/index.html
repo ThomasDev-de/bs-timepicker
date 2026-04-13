@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en" data-bs-theme="light">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -48,6 +48,12 @@
                             <label for="timeEmpty" class="form-label">Empty input with <code>btnEmptyText</code></label>
                             <input type="text" id="timeEmpty" class="form-control" value="">
                             <div class="form-text">Shows an empty trigger label until a time is set.</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="timeCustomLabels" class="form-label">Custom Labels</label>
+                            <input type="text" id="timeCustomLabels" class="form-control" value="12:00">
+                            <div class="form-text">Using custom <code>okLabel</code> and <code>cancelLabel</code>.</div>
                         </div>
                     </div>
 
@@ -151,7 +157,8 @@
                 input12_val: $("#time12").bsTimepicker("val"),
                 div24_val: $("#timeDiv24").bsTimepicker("val"),
                 div12_val: $("#timeDiv12").bsTimepicker("val"),
-                empty_val: $("#timeEmpty").bsTimepicker("val")
+                empty_val: $("#timeEmpty").bsTimepicker("val"),
+                custom_val: $("#timeCustomLabels").bsTimepicker("val")
             };
         }
 
@@ -194,7 +201,19 @@
                 btnEmptyText: "Please select a time"
             });
 
-            bindTimepickerEvents("#time24, #time12, #timeDiv24, #timeDiv12, #timeEmpty");
+            $("#timeCustomLabels").bsTimepicker({
+                format: "24h",
+                title: "Custom Labels",
+                btnClass: "btn btn-outline-info",
+                btnWidth: "220px",
+                okLabel: '<i class="bi bi-save"></i> Speichern',
+                cancelLabel: '<i class="bi bi-trash"></i> Abbruch',
+                icons: {
+                    trigger: "bi bi-clock-history"
+                }
+            });
+
+            bindTimepickerEvents("#time24, #time12, #timeDiv24, #timeDiv12, #timeEmpty, #timeCustomLabels");
 
             $("#setMorning").on("click", function () {
                 $("#time24").bsTimepicker("setTime", "06:30");
@@ -238,7 +257,8 @@
                     time12: $("#time12").bsTimepicker("val"),
                     timeDiv24: $("#timeDiv24").bsTimepicker("val"),
                     timeDiv12: $("#timeDiv12").bsTimepicker("val"),
-                    timeEmpty: $("#timeEmpty").bsTimepicker("val")
+                    timeEmpty: $("#timeEmpty").bsTimepicker("val"),
+                    timeCustom: $("#timeCustomLabels").bsTimepicker("val")
                 });
             });
 
@@ -246,11 +266,13 @@
                 $("#time24").bsTimepicker("val", "12:30");
                 $("#time12").bsTimepicker("val", "12:30 PM");
                 $("#timeEmpty").bsTimepicker("val", "12:30");
+                $("#timeCustomLabels").bsTimepicker("val", "12:30");
 
                 writeOutput("val(...) set", {
                     time24: $("#time24").bsTimepicker("val"),
                     time12: $("#time12").bsTimepicker("val"),
-                    timeEmpty: $("#timeEmpty").bsTimepicker("val")
+                    timeEmpty: $("#timeEmpty").bsTimepicker("val"),
+                    timeCustom: $("#timeCustomLabels").bsTimepicker("val")
                 });
             });
 
@@ -258,11 +280,13 @@
                 $("#time24").bsTimepicker("val", "");
                 $("#time12").bsTimepicker("val", "");
                 $("#timeEmpty").bsTimepicker("val", "");
+                $("#timeCustomLabels").bsTimepicker("val", "");
 
                 writeOutput("val('') set", {
                     time24: $("#time24").bsTimepicker("val"),
                     time12: $("#time12").bsTimepicker("val"),
-                    timeEmpty: $("#timeEmpty").bsTimepicker("val")
+                    timeEmpty: $("#timeEmpty").bsTimepicker("val"),
+                    timeCustom: $("#timeCustomLabels").bsTimepicker("val")
                 });
             });
 

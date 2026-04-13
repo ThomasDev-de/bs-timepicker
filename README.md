@@ -1,4 +1,4 @@
-# bsTimepicker v1.0.2
+# bsTimepicker v1.0.3
 
 `bsTimepicker` is a jQuery time picker plugin with a Bootstrap 5 styled trigger and dropdown UI. It supports 12-hour and 24-hour display modes, stores values in a database-friendly 24-hour format, and works with `input` and `div` elements.
 
@@ -15,7 +15,9 @@ The picker uses a circular clock-style selector inspired by mobile alarm/time pi
 - Touch-friendly circular dial with pointer support
 - Public API for show, hide, toggle, set, get, and value access
 - Event hooks for initialization, visibility changes, and value changes
-- Bootstrap Icons support for trigger, confirm, and cancel icons
+- Customizable `okLabel` and `cancelLabel` with HTML support (Icons + Text)
+- Automatic state revert when cancelling or clicking outside
+- Compact design for better UI integration
 
 ## Requirements
 
@@ -116,12 +118,14 @@ Examples:
     "closeOnSelect": false,
     "btnClass": "btn btn-outline-secondary",
     "btnWidth": null,
-    "btnEmptyText": "Select time",
+    "btnEmptyText": "--:--",
+    "showClearButton": true,
     "icons": {
-        "trigger": "bi bi-clock",
-        "cancel": "bi bi-x-lg",
-        "ok": "bi bi-check-lg"
-    }
+        "trigger": "bi bi-clock"
+    },
+    "clearLabel": "<span class=\"small\">Clear</span>",
+    "okLabel": "<i class=\"bi bi-check-lg fs-4 text-success\"></i> <span class=\"small\">OK</span>",
+    "cancelLabel": "<i class=\"bi bi-x-lg text-muted\"></i> <span class=\"small\">Cancel</span>"
 }
 ```
 
@@ -197,23 +201,47 @@ Type: `string`
 
 Text shown in the trigger when no value is set.
 
+Default is `--:--`.
+
+### `showClearButton`
+
+Type: `boolean`
+
+Shows a clear button in the picker footer that resets the value to empty (`null` in `val()`).
+
+### `clearLabel`
+
+Type: `string`
+
+HTML or text for the clear button.
+
 ### `icons`
 
 Type: `object`
 
-Controls the Bootstrap Icon classes used by the trigger and action buttons.
+Controls the Bootstrap Icon classes used by the trigger.
 
 Example:
 
 ```json
 {
     "icons": {
-        "trigger": "bi bi-clock",
-        "cancel": "bi bi-x-lg",
-        "ok": "bi bi-check-lg"
+        "trigger": "bi bi-clock"
     }
 }
 ```
+
+### `okLabel`
+
+Type: `string`
+
+HTML or text for the confirmation button. Default includes a check icon and "OK".
+
+### `cancelLabel`
+
+Type: `string`
+
+HTML or text for the cancel button. Default includes an "X" icon and "Cancel".
 
 ## Public API
 
@@ -243,7 +271,23 @@ Example result:
     "meridiem": "PM",
     "formatted24": "13:40",
     "formatted12": "01:40 PM",
-    "formatted": "13:40"
+    "formatted": "13:40",
+    "isEmpty": false
+}
+```
+
+Empty result (after clear):
+
+```json
+{
+    "hour24": null,
+    "minute": null,
+    "hour12": null,
+    "meridiem": null,
+    "formatted24": null,
+    "formatted12": null,
+    "formatted": null,
+    "isEmpty": true
 }
 ```
 
@@ -281,6 +325,14 @@ $("#time24").bsTimepicker("val", "");
 ```
 
 Passing `""` or `null` clears the value and restores the empty trigger label.
+
+### `clear()`
+
+Clears the value, updates the trigger label to the configured empty text, and fires change events.
+
+```javascript
+$("#time24").bsTimepicker("clear");
+```
 
 ### `show()`
 
@@ -332,6 +384,7 @@ The plugin can emit the following events on the original root element.
 - `changeHour.bs.timepicker`
 - `changeMinutes.bs.timepicker`
 - `timeChange.bsTimepicker`
+- `clear.bs.timepicker`
 
 ### Example
 

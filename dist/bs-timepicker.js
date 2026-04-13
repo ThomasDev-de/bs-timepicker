@@ -1,5 +1,5 @@
 /**
- * @version 1.0.2
+ * @version 1.0.3
  */
 (function ($) {
     "use strict";
@@ -14,12 +14,14 @@
         closeOnSelect: false,
         btnClass: "btn btn-outline-secondary",
         btnWidth: null,
-        btnEmptyText: "Select time",
+        btnEmptyText: "--:--",
+        showClearButton: true,
         icons: {
-            trigger: "bi bi-clock",
-            cancel: "bi bi-x-lg",
-            ok: "bi bi-check-lg"
-        }
+            trigger: "bi bi-clock"
+        },
+        clearLabel: '<span class="small">Clear</span>',
+        okLabel: '<span class="small">OK</span>',
+        cancelLabel: '<span class="small">Cancel</span>'
     };
 
     function pad(num) {
@@ -197,6 +199,7 @@
             hour24: 12,
             minute: 0
         };
+        this.hasValue = !!parsedInitial;
 
         if (parsedInitial) {
             this._syncToField(false);
@@ -249,8 +252,8 @@
                 </button>
 
                 <div id="${panelId}"
-                     class="dropdown-menu p-3 border-0 shadow rounded-4 bg-body"
-                     style="width:360px;max-width:calc(100vw - 24px);">
+                     class="dropdown-menu p-2 border-0 shadow rounded-4 bg-body"
+                     style="width:260px;max-width:calc(100vw - 24px);">
                     
                     ${title}
 
@@ -258,27 +261,27 @@
                         <div class="d-flex align-items-center">
                             <button type="button"
                                     class="bs-tp-select-hour btn border-0 rounded-4 d-flex align-items-center justify-content-center"
-                                    style="width:68px;height:54px;padding:0;font-size:2rem;line-height:1;letter-spacing:-0.04em;box-shadow:none;">
+                                    style="width:54px;height:44px;padding:0;font-size:1.6rem;line-height:1;letter-spacing:-0.04em;box-shadow:none;">
                                 07
                             </button>
 
                             <div class="d-flex align-items-center justify-content-center text-body"
-                                 style="width:18px;height:84px;font-size:1.8rem;line-height:1;">
+                                 style="width:14px;height:64px;font-size:1.4rem;line-height:1;">
                                 :
                             </div>
 
                             <button type="button"
                                     class="bs-tp-select-minute btn border-0 rounded-4 d-flex align-items-center justify-content-center"
-                                    style="width:68px;height:54px;padding:0;font-size:2rem;line-height:1;letter-spacing:-0.04em;box-shadow:none;">
+                                    style="width:54px;height:44px;padding:0;font-size:1.6rem;line-height:1;letter-spacing:-0.04em;box-shadow:none;">
                                 00
                             </button>
                         </div>
 
-                        <div class="bs-tp-meridiem-wrap ms-2" style="width:56px;height:84px;"></div>
+                        <div class="bs-tp-meridiem-wrap ms-2" style="width:42px;height:64px;"></div>
                     </div>
 
                     <div class="bs-tp-dial position-relative rounded-circle mx-auto"
-                         style="width:280px;height:280px;overflow:hidden;touch-action:none;background:rgba(0,0,0,.035);">
+                         style="width:220px;height:220px;overflow:hidden;touch-action:none;background:rgba(0,0,0,.035);">
                         
                         <div class="bs-tp-hand position-absolute top-50 start-50"
                              style="height:2px;width:0;transform:translateY(-50%);transform-origin:0 50%;background:var(--bs-primary);z-index:1;pointer-events:none;transition:transform 120ms ease,width 120ms ease;">
@@ -291,18 +294,29 @@
                         <div class="bs-tp-items position-absolute top-0 start-0 w-100 h-100" style="z-index:2;"></div>
                     </div>
 
-                    <div class="d-flex justify-content-end gap-3 mt-3">
-                        <button type="button"
-                                class="btn btn-link text-decoration-none p-0 bs-tp-cancel"
-                                style="box-shadow:none;">
-                            <i class="${this.options.icons.cancel}"></i>
-                        </button>
+                    <div class="d-flex align-items-center justify-content-between gap-3 mt-2 mb-1 mx-2">
+                        <div class="d-flex align-items-center gap-2">
+                            ${this.options.showClearButton ? `
+                            <button type="button"
+                                    class="btn btn-link btn-sm text-decoration-none p-0 bs-tp-clear d-flex align-items-center gap-1"
+                                    style="box-shadow:none;">
+                                ${this.options.clearLabel}
+                            </button>` : ""}
+                        </div>
 
-                        <button type="button"
-                                class="btn btn-link text-decoration-none p-0 bs-tp-ok"
-                                style="box-shadow:none;">
-                            <i class="${this.options.icons.ok}"></i>
-                        </button>
+                        <div class="d-flex align-items-center gap-3">
+                            <button type="button"
+                                    class="btn btn-link btn-sm text-decoration-none p-0 bs-tp-cancel d-flex align-items-center gap-1"
+                                    style="box-shadow:none;">
+                                ${this.options.cancelLabel}
+                            </button>
+
+                            <button type="button"
+                                    class="btn btn-link btn-sm text-decoration-none p-0 bs-tp-ok d-flex align-items-center gap-1"
+                                    style="box-shadow:none;">
+                                ${this.options.okLabel}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>`;
@@ -388,8 +402,7 @@
         }
 
         if (value == null || value === "") {
-            this._writeRawValue("");
-            this._renderTriggerLabel("");
+            this.clear(true);
             return this;
         }
 
@@ -410,6 +423,12 @@
         });
 
         this.$trigger.on(`show.bs.dropdown.${PLUGIN_NAME}`, function () {
+            self.originalState = {
+                hour24: self.state.hour24,
+                minute: self.state.minute,
+                hasValue: self.hasValue
+            };
+            self._confirmed = false;
             self.$root.trigger("show.bs.timepicker", [self.getTime()]);
         });
 
@@ -419,6 +438,9 @@
         });
 
         this.$trigger.on(`hide.bs.dropdown.${PLUGIN_NAME}`, function () {
+            if (!self._confirmed) {
+                self._revertState();
+            }
             self.$root.trigger("hide.bs.timepicker", [self.getTime()]);
         });
 
@@ -428,16 +450,39 @@
         });
     };
 
+    BsTimepicker.prototype._revertState = function () {
+        if (this.originalState) {
+            this.state.hour24 = this.originalState.hour24;
+            this.state.minute = this.originalState.minute;
+            this.hasValue = !!this.originalState.hasValue;
+            this._refreshHeader();
+            this._renderDial();
+            if (this.hasValue) {
+                this._syncToField(false);
+            } else {
+                this.clear(false);
+            }
+        }
+    };
+
     BsTimepicker.prototype._triggerChangeEvents = function (previousState) {
         const current = this.getTime();
 
         this.$root.trigger("change.bs.timepicker", [current]);
 
-        if (!previousState || previousState.hour24 !== this.state.hour24) {
+        if (
+            !previousState ||
+            previousState.hasValue !== this.hasValue ||
+            previousState.hour24 !== this.state.hour24
+        ) {
             this.$root.trigger("changeHour.bs.timepicker", [current]);
         }
 
-        if (!previousState || previousState.minute !== this.state.minute) {
+        if (
+            !previousState ||
+            previousState.hasValue !== this.hasValue ||
+            previousState.minute !== this.state.minute
+        ) {
             this.$root.trigger("changeMinutes.bs.timepicker", [current]);
         }
     };
@@ -449,10 +494,10 @@
         }
 
         this.$meridiemWrap.show().html(
-            '<div class="d-flex flex-column h-100 overflow-hidden rounded-4 border" style="border-color:rgba(0,0,0,.15) !important;">' +
-            '<button type="button" class="btn border-0 rounded-0 flex-fill bs-tp-am" style="font-size:1rem;box-shadow:none;">AM</button>' +
-            '<div style="height:1px;background:rgba(0,0,0,.15);"></div>' +
-            '<button type="button" class="btn border-0 rounded-0 flex-fill bs-tp-pm" style="font-size:1rem;box-shadow:none;">PM</button>' +
+            '<div class="d-flex flex-column h-100 overflow-hidden rounded-3 border" style="border-color:rgba(0,0,0,.1) !important;">' +
+            '<button type="button" class="btn border-0 rounded-0 flex-fill text-nowrap bs-tp-am" style="font-size:0.8rem;padding:0;box-shadow:none;">AM</button>' +
+            '<div style="height:1px;background:rgba(0,0,0,.1);"></div>' +
+            '<button type="button" class="btn border-0 rounded-0 flex-fill text-nowrap bs-tp-pm" style="font-size:0.8rem;padding:0;box-shadow:none;">PM</button>' +
             '</div>'
         );
     };
@@ -495,7 +540,8 @@
 
             const previousState = {
                 hour24: self.state.hour24,
-                minute: self.state.minute
+                minute: self.state.minute,
+                hasValue: self.hasValue
             };
 
             const h12 = parseInt(displayHour(self.state.hour24, "12h"), 10);
@@ -508,7 +554,8 @@
             e.preventDefault();
             const previousState = {
                 hour24: self.state.hour24,
-                minute: self.state.minute
+                minute: self.state.minute,
+                hasValue: self.hasValue
             };
             const h12 = parseInt(displayHour(self.state.hour24, "12h"), 10);
             self.state.hour24 = makeHour24From12(h12, "PM");
@@ -518,11 +565,20 @@
 
         this.$panel.find(".bs-tp-cancel").on(`click.${PLUGIN_NAME}`, function (e) {
             e.preventDefault();
+            self._revertState();
+            self.hide();
+        });
+
+        this.$panel.find(".bs-tp-clear").on(`click.${PLUGIN_NAME}`, function (e) {
+            e.preventDefault();
+            self._confirmed = true;
+            self.clear(true);
             self.hide();
         });
 
         this.$panel.find(".bs-tp-ok").on(`click.${PLUGIN_NAME}`, function (e) {
             e.preventDefault();
+            self._confirmed = true;
             self._syncToField(true);
             self.hide();
         });
@@ -578,6 +634,7 @@
             self._pointerId = null;
 
             if (self.view === "minute" && self.options.closeOnSelect) {
+                self._confirmed = true;
                 self.hide();
             }
         });
@@ -589,7 +646,8 @@
 
         const previousState = {
             hour24: this.state.hour24,
-            minute: this.state.minute
+            minute: this.state.minute,
+            hasValue: this.hasValue
         };
 
         if (this.view === "hour") {
@@ -660,7 +718,7 @@
             };
         }
 
-        const outerThreshold = rect.width * 0.30;
+        const outerThreshold = rect.width * 0.35;
 
         if (distance < outerThreshold) {
             let innerHour = step + 12;
@@ -702,13 +760,15 @@
             const meridiem = getMeridiem(this.state.hour24);
 
             this.$panel.find(".bs-tp-am").css({
-                background: meridiem === "AM" ? "rgba(var(--bs-primary-rgb), .20)" : "transparent",
-                color: meridiem === "AM" ? "rgb(var(--bs-primary-rgb))" : "var(--bs-body-color)"
+                background: meridiem === "AM" ? "rgba(var(--bs-primary-rgb), .15)" : "transparent",
+                color: meridiem === "AM" ? "rgb(var(--bs-primary-rgb))" : "var(--bs-body-color)",
+                fontWeight: meridiem === "AM" ? "600" : "400"
             });
 
             this.$panel.find(".bs-tp-pm").css({
-                background: meridiem === "PM" ? "rgba(var(--bs-primary-rgb), .20)" : "transparent",
-                color: meridiem === "PM" ? "rgb(var(--bs-primary-rgb))" : "var(--bs-body-color)"
+                background: meridiem === "PM" ? "rgba(var(--bs-primary-rgb), .15)" : "transparent",
+                color: meridiem === "PM" ? "rgb(var(--bs-primary-rgb))" : "var(--bs-body-color)",
+                fontWeight: meridiem === "PM" ? "600" : "400"
             });
         }
     };
@@ -716,10 +776,10 @@
     BsTimepicker.prototype._renderDial = function () {
         this.$items.empty();
 
-        const cx = 140;
-        const cy = 140;
-        const outerRadius = 102;
-        const innerRadius = 66;
+        const cx = 110;
+        const cy = 110;
+        const outerRadius = 82;
+        const innerRadius = 52;
         const self = this;
 
         function polarToXY(position, total, radius) {
@@ -765,11 +825,11 @@
                 left: pos.x + "px",
                 top: pos.y + "px",
                 transform: "translate(-50%, -50%)",
-                width: config.inner ? "34px" : "40px",
-                height: config.inner ? "34px" : "40px",
+                width: config.inner ? "28px" : "32px",
+                height: config.inner ? "28px" : "32px",
                 padding: 0,
-                lineHeight: config.inner ? "34px" : "40px",
-                fontSize: config.inner ? "0.82rem" : "0.95rem",
+                lineHeight: config.inner ? "28px" : "32px",
+                fontSize: config.inner ? "0.7rem" : "0.8rem",
                 boxShadow: "none",
                 outline: "none",
                 zIndex: 2
@@ -804,7 +864,8 @@
                 const value = parseInt($(this).attr("data-value"), 10);
                 const previousState = {
                     hour24: self.state.hour24,
-                    minute: self.state.minute
+                    minute: self.state.minute,
+                    hasValue: self.hasValue
                 };
 
                 if (self.view === "hour") {
@@ -968,6 +1029,7 @@
 
     BsTimepicker.prototype._syncToField = function (triggerSelectedEvent, previousState) {
         const value = formatTime(this.state.hour24, this.state.minute, this.options.format);
+        this.hasValue = true;
 
         this._renderTriggerLabel(value);
         this._writeRawValue(value);
@@ -1002,9 +1064,7 @@
 
     BsTimepicker.prototype.setTime = function (value) {
         if (value == null || value === "") {
-            this._writeRawValue("");
-            this._renderTriggerLabel("");
-            this.$root.trigger("change.bs.timepicker", [""]);
+            this.clear(true);
             return this;
         }
 
@@ -1013,7 +1073,8 @@
 
         const previousState = {
             hour24: this.state.hour24,
-            minute: this.state.minute
+            minute: this.state.minute,
+            hasValue: this.hasValue
         };
 
         this.state.hour24 = parsed.hour24;
@@ -1026,6 +1087,19 @@
     };
 
     BsTimepicker.prototype.getTime = function () {
+        if (!this.hasValue) {
+            return {
+                hour24: null,
+                minute: null,
+                hour12: null,
+                meridiem: null,
+                formatted24: null,
+                formatted12: null,
+                formatted: null,
+                isEmpty: true
+            };
+        }
+
         return {
             hour24: this.state.hour24,
             minute: this.state.minute,
@@ -1033,8 +1107,33 @@
             meridiem: getMeridiem(this.state.hour24),
             formatted24: formatTime(this.state.hour24, this.state.minute, "24h"),
             formatted12: formatTime(this.state.hour24, this.state.minute, "12h"),
-            formatted: formatTime(this.state.hour24, this.state.minute, this.options.format)
+            formatted: formatTime(this.state.hour24, this.state.minute, this.options.format),
+            isEmpty: false
         };
+    };
+
+    BsTimepicker.prototype.clear = function (triggerSelectedEvent, previousState) {
+        const before = previousState || {
+            hour24: this.state.hour24,
+            minute: this.state.minute,
+            hasValue: this.hasValue
+        };
+
+        this.hasValue = false;
+        this._writeRawValue("");
+        this._renderTriggerLabel("");
+
+        if (triggerSelectedEvent) {
+            const payload = this.getTime();
+            this.$root.trigger("timeChange.bsTimepicker", [payload]);
+            this.$root.trigger("clear.bs.timepicker", [payload]);
+
+            if (typeof this._triggerChangeEvents === "function") {
+                this._triggerChangeEvents(before);
+            }
+        }
+
+        return this;
     };
 
     BsTimepicker.prototype.destroy = function () {
