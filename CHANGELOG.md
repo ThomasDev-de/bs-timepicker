@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.0.4] - 2026-05-04
+
+### Fixed
+- Bootstrap 4 compatibility for dropdown initialization and API calls (`show`, `hide`, `toggle`) with safe BS4/BS5 detection.
+- Bootstrap 4 behavior where clicks inside the timepicker dropdown immediately closed the menu.
+- Missing spacing in Bootstrap 4 for trigger icon/text and dropdown action buttons (Clear/Cancel/OK).
+- Missing spacing on demo action buttons when rendered with Bootstrap 4.
+
+### Changed
+- Added Bootstrap 4-compatible markup/CSS fallbacks (`data-toggle`, spacing fallbacks, positioning fallbacks, and color variable fallbacks) while keeping Bootstrap 5 behavior unchanged.
+
 ## [1.0.3] - 2026-04-13
 
 ### Added

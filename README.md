@@ -1,13 +1,13 @@
-# bsTimepicker v1.0.3
+# bsTimepicker v1.0.4
 
-`bsTimepicker` is a jQuery time picker plugin with a Bootstrap 5 styled trigger and dropdown UI. It supports 12-hour and 24-hour display modes, stores values in a database-friendly 24-hour format, and works with `input` and `div` elements.
+`bsTimepicker` is a jQuery time picker plugin with a Bootstrap-styled trigger and dropdown UI. It supports 12-hour and 24-hour display modes, stores values in a database-friendly 24-hour format, and works with `input` and `div` elements.
 
 The picker uses a circular clock-style selector inspired by mobile alarm/time picker interfaces while staying easy to drop into existing Bootstrap-based forms.
 
 ## Features
 
 - jQuery plugin exposed as `$.fn.bsTimepicker`
-- Bootstrap 5 styled trigger button and dropdown
+- Bootstrap 4/5 styled trigger button and dropdown
 - 12h and 24h display modes
 - Database-friendly value handling via `val()`
 - Supports `input` and `div` root elements
@@ -22,9 +22,9 @@ The picker uses a circular clock-style selector inspired by mobile alarm/time pi
 ## Requirements
 
 - jQuery 3.x
-- Bootstrap 5.x
+- Bootstrap 4.6.x or 5.x
 - Bootstrap Icons for the default icons shown in the trigger and action buttons
-- Bootstrap bundle JS must be loaded because the plugin uses the Bootstrap dropdown component
+- Bootstrap JS must be loaded because the plugin uses the Bootstrap dropdown component
 
 ## Installation
 

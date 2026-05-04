@@ -1,5 +1,5 @@
 /**
- * @version 1.0.3
+ * @version 1.0.4
  */
 (function ($) {
     "use strict";
@@ -142,6 +142,13 @@
         }
         return h === 12 ? 12 : h + 12;
     }
+    function supportsBs5Dropdown() {
+        return (
+            typeof bootstrap !== "undefined" &&
+            !!bootstrap.Dropdown &&
+            typeof bootstrap.Dropdown.getOrCreateInstance === "function"
+        );
+    }
     BsTimepicker.prototype._renderTriggerLabel = function (value) {
         const text = value == null || value === "" ? this.options.btnEmptyText : value;
 
@@ -234,7 +241,7 @@
         const widthStyle = this.options.btnWidth != null ? `width:${this.options.btnWidth};` : "";
         let title = "";
         if (this.options.hasOwnProperty('title') && this.options.title !== null && this.options.title !== "") {
-            title = `<div class="small d-block text-center text-body-secondary mb-2">${this.options.title}</div>`;
+            title = `<div class="small d-block text-center text-muted text-body-secondary mb-2">${this.options.title}</div>`;
         }
 
         const html =
@@ -243,16 +250,17 @@
                         class="bs-timepicker-trigger ${this.options.btnClass}"
                         style="${widthStyle}"
                         data-bs-toggle="dropdown"
+                        data-toggle="dropdown"
                         data-bs-auto-close="outside"
                         aria-expanded="false">
-                    <span class="d-inline-flex align-items-center gap-2">
+                    <span class="d-inline-flex align-items-center gap-2" style="gap:.5rem;">
                         <i class="bs-tp-trigger-icon ${this.options.icons.trigger}"></i>
                         <span class="bs-tp-trigger-text"></span>
                     </span>
                 </button>
 
                 <div id="${panelId}"
-                     class="dropdown-menu p-2 border-0 shadow rounded-4 bg-body"
+                     class="dropdown-menu p-2 border-0 shadow rounded rounded-4 bg-white bg-body"
                      style="width:260px;max-width:calc(100vw - 24px);">
                     
                     ${title}
@@ -277,43 +285,43 @@
                             </button>
                         </div>
 
-                        <div class="bs-tp-meridiem-wrap ms-2" style="width:42px;height:64px;"></div>
+                        <div class="bs-tp-meridiem-wrap ml-2 ms-2" style="width:42px;height:64px;"></div>
                     </div>
 
                     <div class="bs-tp-dial position-relative rounded-circle mx-auto"
                          style="width:220px;height:220px;overflow:hidden;touch-action:none;background:rgba(0,0,0,.035);">
                         
-                        <div class="bs-tp-hand position-absolute top-50 start-50"
-                             style="height:2px;width:0;transform:translateY(-50%);transform-origin:0 50%;background:var(--bs-primary);z-index:1;pointer-events:none;transition:transform 120ms ease,width 120ms ease;">
+                        <div class="bs-tp-hand position-absolute"
+                             style="left:50%;top:50%;height:2px;width:0;transform:translateY(-50%);transform-origin:0 50%;background:var(--bs-primary, #0d6efd);z-index:1;pointer-events:none;transition:transform 120ms ease,width 120ms ease;">
                         </div>
 
-                        <div class="bs-tp-center-dot position-absolute top-50 start-50 translate-middle rounded-circle"
-                             style="width:10px;height:10px;background:var(--bs-primary);z-index:3;">
+                        <div class="bs-tp-center-dot position-absolute rounded-circle"
+                             style="left:50%;top:50%;transform:translate(-50%, -50%);width:10px;height:10px;background:var(--bs-primary, #0d6efd);z-index:3;">
                         </div>
 
-                        <div class="bs-tp-items position-absolute top-0 start-0 w-100 h-100" style="z-index:2;"></div>
+                        <div class="bs-tp-items position-absolute w-100 h-100" style="left:0;top:0;z-index:2;"></div>
                     </div>
 
                     <div class="d-flex align-items-center justify-content-between gap-3 mt-2 mb-1 mx-2">
                         <div class="d-flex align-items-center gap-2">
                             ${this.options.showClearButton ? `
                             <button type="button"
-                                    class="btn btn-link btn-sm text-decoration-none p-0 bs-tp-clear d-flex align-items-center gap-1"
-                                    style="box-shadow:none;">
+                                    class="btn btn-link btn-sm text-decoration-none p-0 bs-tp-clear d-flex align-items-center gap-1 mr-2"
+                                    style="box-shadow:none;gap:.25rem;">
                                 ${this.options.clearLabel}
                             </button>` : ""}
                         </div>
 
                         <div class="d-flex align-items-center gap-3">
                             <button type="button"
-                                    class="btn btn-link btn-sm text-decoration-none p-0 bs-tp-cancel d-flex align-items-center gap-1"
-                                    style="box-shadow:none;">
+                                    class="btn btn-link btn-sm text-decoration-none p-0 bs-tp-cancel d-flex align-items-center gap-1 mr-3"
+                                    style="box-shadow:none;gap:.25rem;">
                                 ${this.options.cancelLabel}
                             </button>
 
                             <button type="button"
                                     class="btn btn-link btn-sm text-decoration-none p-0 bs-tp-ok d-flex align-items-center gap-1"
-                                    style="box-shadow:none;">
+                                    style="box-shadow:none;gap:.25rem;">
                                 ${this.options.okLabel}
                             </button>
                         </div>
@@ -369,6 +377,7 @@
 
             this.$trigger.attr({
                 "data-bs-toggle": "dropdown",
+                "data-toggle": "dropdown",
                 "data-bs-auto-close": "outside",
                 "aria-expanded": "false"
             });
@@ -412,15 +421,23 @@
     BsTimepicker.prototype._initBootstrapDropdown = function () {
         if (!this.$trigger || !this.$trigger.length) return;
 
-        if (typeof bootstrap === "undefined" || !bootstrap.Dropdown) {
-            throw new Error("Bootstrap Dropdown ist nicht verfügbar. Bitte bootstrap.bundle.min.js laden.");
-        }
-
         const self = this;
 
-        this.dropdownInstance = bootstrap.Dropdown.getOrCreateInstance(this.$trigger[0], {
-            autoClose: "outside"
-        });
+        this._isBs5Dropdown = supportsBs5Dropdown();
+        this._isBs4Dropdown = !this._isBs5Dropdown && typeof $.fn.dropdown === "function";
+
+        if (this._isBs5Dropdown) {
+            this.dropdownInstance = bootstrap.Dropdown.getOrCreateInstance(this.$trigger[0], {
+                autoClose: "outside"
+            });
+        } else if (this._isBs4Dropdown) {
+            this.$trigger.dropdown();
+            this.$panel.on(`click.${PLUGIN_NAME}.bs4`, function (e) {
+                e.stopPropagation();
+            });
+        } else {
+            throw new Error("Bootstrap Dropdown ist nicht verfügbar. Bitte bootstrap.bundle.min.js (BS5) oder bootstrap.min.js (BS4 + jQuery) laden.");
+        }
 
         this.$trigger.on(`show.bs.dropdown.${PLUGIN_NAME}`, function () {
             self.originalState = {
@@ -737,10 +754,10 @@
     };
 
     BsTimepicker.prototype._refreshHeader = function () {
-        const activeBg = "rgba(var(--bs-primary-rgb), .18)";
+        const activeBg = "rgba(var(--bs-primary-rgb, 13, 110, 253), .18)";
         const inactiveBg = "rgba(0,0,0,.04)";
-        const activeColor = "rgb(var(--bs-primary-rgb))";
-        const inactiveColor = "var(--bs-body-color)";
+        const activeColor = "rgb(var(--bs-primary-rgb, 13, 110, 253))";
+        const inactiveColor = "var(--bs-body-color, #212529)";
 
         this.$hourBtn
             .text(displayHour(this.state.hour24, this.options.format))
@@ -760,14 +777,14 @@
             const meridiem = getMeridiem(this.state.hour24);
 
             this.$panel.find(".bs-tp-am").css({
-                background: meridiem === "AM" ? "rgba(var(--bs-primary-rgb), .15)" : "transparent",
-                color: meridiem === "AM" ? "rgb(var(--bs-primary-rgb))" : "var(--bs-body-color)",
+                background: meridiem === "AM" ? "rgba(var(--bs-primary-rgb, 13, 110, 253), .15)" : "transparent",
+                color: meridiem === "AM" ? "rgb(var(--bs-primary-rgb, 13, 110, 253))" : "var(--bs-body-color, #212529)",
                 fontWeight: meridiem === "AM" ? "600" : "400"
             });
 
             this.$panel.find(".bs-tp-pm").css({
-                background: meridiem === "PM" ? "rgba(var(--bs-primary-rgb), .15)" : "transparent",
-                color: meridiem === "PM" ? "rgb(var(--bs-primary-rgb))" : "var(--bs-body-color)",
+                background: meridiem === "PM" ? "rgba(var(--bs-primary-rgb, 13, 110, 253), .15)" : "transparent",
+                color: meridiem === "PM" ? "rgb(var(--bs-primary-rgb, 13, 110, 253))" : "var(--bs-body-color, #212529)",
                 fontWeight: meridiem === "PM" ? "600" : "400"
             });
         }
@@ -806,7 +823,7 @@
                 width: "20px",
                 height: "20px",
                 transform: "translateY(-50%)",
-                background: "var(--bs-primary)",
+                background: "var(--bs-primary, #0d6efd)",
                 pointerEvents: "none"
             });
 
@@ -837,7 +854,7 @@
 
             $el[0].style.setProperty(
                 "background-color",
-                config.active ? "var(--bs-primary)" : "transparent",
+                config.active ? "var(--bs-primary, #0d6efd)" : "transparent",
                 "important"
             );
 
@@ -1047,18 +1064,48 @@
     BsTimepicker.prototype.show = function () {
         if (this.dropdownInstance) {
             this.dropdownInstance.show();
+            return;
+        }
+
+        if (this._isBs4Dropdown) {
+            if (!this.$panel.hasClass("show")) {
+                const self = this;
+                setTimeout(function () {
+                    self.$trigger.dropdown("toggle");
+                }, 0);
+            }
         }
     };
 
     BsTimepicker.prototype.hide = function () {
         if (this.dropdownInstance) {
             this.dropdownInstance.hide();
+            return;
+        }
+
+        if (this._isBs4Dropdown) {
+            if (this.$panel.hasClass("show")) {
+                this.$trigger.dropdown("toggle");
+            }
         }
     };
 
     BsTimepicker.prototype.toggle = function () {
         if (this.dropdownInstance) {
             this.dropdownInstance.toggle();
+            return;
+        }
+
+        if (this._isBs4Dropdown) {
+            const isOpen = this.$panel.hasClass("show");
+            if (isOpen) {
+                this.$trigger.dropdown("toggle");
+            } else {
+                const self = this;
+                setTimeout(function () {
+                    self.$trigger.dropdown("toggle");
+                }, 0);
+            }
         }
     };
 

@@ -8,6 +8,7 @@
     "jquery",
     "bootstrap",
     "bootstrap-5",
+    "bootstrap-4",
     "timepicker",
     "time-picker",
     "ui"
@@ -20,7 +21,7 @@
   ],
   "require": {
     "components/jquery": "^3.6",
-    "twbs/bootstrap": "^5.0",
+    "twbs/bootstrap": "^4 | ^5",
     "twbs/bootstrap-icons": "^1.0"
   }
 }
