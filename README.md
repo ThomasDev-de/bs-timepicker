@@ -1,4 +1,4 @@
-# bsTimepicker v1.0.4
+# bsTimepicker v1.0.5
 
 `bsTimepicker` is a jQuery time picker plugin with a Bootstrap-styled trigger and dropdown UI. It supports 12-hour and 24-hour display modes, stores values in a database-friendly 24-hour format, and works with `input` and `div` elements.
 
@@ -9,10 +9,11 @@ The picker uses a circular clock-style selector inspired by mobile alarm/time pi
 - jQuery plugin exposed as `$.fn.bsTimepicker`
 - Bootstrap 4/5 styled trigger button and dropdown
 - 12h and 24h display modes
+- Configurable minute interval: 1, 5, 10, or 15 minutes
 - Database-friendly value handling via `val()`
 - Supports `input` and `div` root elements
 - Optional hidden field support with `nameField`
-- Touch-friendly circular dial with pointer support
+- Touch-friendly circular dial with draggable active pointer support
 - Public API for show, hide, toggle, set, get, and value access
 - Event hooks for initialization, visibility changes, and value changes
 - Customizable `okLabel` and `cancelLabel` with HTML support (Icons + Text)
@@ -23,7 +24,7 @@ The picker uses a circular clock-style selector inspired by mobile alarm/time pi
 
 - jQuery 3.x
 - Bootstrap 4.6.x or 5.x
-- Bootstrap Icons for the default icons shown in the trigger and action buttons
+- Bootstrap Icons for the default trigger icon and any icon labels you configure
 - Bootstrap JS must be loaded because the plugin uses the Bootstrap dropdown component
 
 ## Installation
@@ -81,6 +82,15 @@ $("#appointmentTime").bsTimepicker({
 });
 ```
 
+### Minute interval
+
+```javascript
+$("#appointmentTime").bsTimepicker({
+    format: "24h",
+    minuteInterval: 15
+});
+```
+
 ## Supported root elements
 
 ### Input
@@ -116,6 +126,7 @@ Examples:
     "nameField": null,
     "title": "Select time",
     "closeOnSelect": false,
+    "minuteInterval": 5,
     "btnClass": "btn btn-outline-secondary",
     "btnWidth": null,
     "btnEmptyText": "--:--",
@@ -124,8 +135,8 @@ Examples:
         "trigger": "bi bi-clock"
     },
     "clearLabel": "<span class=\"small\">Clear</span>",
-    "okLabel": "<i class=\"bi bi-check-lg fs-4 text-success\"></i> <span class=\"small\">OK</span>",
-    "cancelLabel": "<i class=\"bi bi-x-lg text-muted\"></i> <span class=\"small\">Cancel</span>"
+    "okLabel": "<span class=\"small\">OK</span>",
+    "cancelLabel": "<span class=\"small\">Cancel</span>"
 }
 ```
 
@@ -170,6 +181,29 @@ Optional title is displayed at the top of the dropdown panel. Set it to `null` o
 Type: `boolean`
 
 When `true`, the picker closes automatically after selecting minutes.
+
+### `minuteInterval`
+
+Type: `number`
+
+Allowed values:
+
+- `1`
+- `5`
+- `10`
+- `15`
+
+Controls the selectable minute steps in the minute dial. The default is `5`.
+With `minuteInterval: 1`, the dial keeps 5-minute labels as visual anchors while tap and drag selection still resolves to every minute.
+
+Examples:
+
+```javascript
+minuteInterval: 1   // every minute
+minuteInterval: 5   // 00, 05, 10, ...
+minuteInterval: 10  // 00, 10, 20, ...
+minuteInterval: 15  // 00, 15, 30, 45
+```
 
 ### `btnClass`
 
@@ -235,13 +269,13 @@ Example:
 
 Type: `string`
 
-HTML or text for the confirmation button. Default includes a check icon and "OK".
+HTML or text for the confirmation button.
 
 ### `cancelLabel`
 
 Type: `string`
 
-HTML or text for the cancel button. Default includes an "X" icon and "Cancel".
+HTML or text for the cancel button.
 
 ## Public API
 

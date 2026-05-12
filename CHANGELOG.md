@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.0.5] - 2026-05-12
+
+### Added
+- New `minuteInterval` option for selectable minute steps of `1`, `5`, `10`, or `15` minutes.
+- Drag support for the active dial pointer so hours and minutes can be adjusted by dragging the selected circle.
+
+### Changed
+- Minute dial rendering, click handling, and pointer handling now all use the configured minute interval.
+
 ## [1.0.4] - 2026-05-04
 
 ### Fixed
