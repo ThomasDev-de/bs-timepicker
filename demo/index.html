@@ -23,7 +23,7 @@
                         <div class="col-md-6">
                             <label for="time24" class="form-label">24h on input</label>
                             <input type="text" id="time24" class="form-control" value="07:15">
-                            <div class="form-text">Initial value comes from the input value.</div>
+                            <div class="form-text">Initial value comes from the input value; uses <code>minuteInterval: 1</code>.</div>
                         </div>
 
                         <div class="col-md-6">
@@ -62,6 +62,12 @@
                                 <label for="timeFloating">Time in form-floating</label>
                             </div>
                             <div class="form-text">Bootstrap <code>form-floating</code> with hidden submit field.</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="timeQuarter" class="form-label">15-minute interval</label>
+                            <input type="text" id="timeQuarter" class="form-control" value="10:30">
+                            <div class="form-text">Uses <code>minuteInterval: 15</code>.</div>
                         </div>
                     </div>
 
@@ -160,6 +166,7 @@
                 div24_getTime: $("#timeDiv24").bsTimepicker("getTime"),
                 div12_getTime: $("#timeDiv12").bsTimepicker("getTime"),
                 empty_getTime: $("#timeEmpty").bsTimepicker("getTime"),
+                quarter_getTime: $("#timeQuarter").bsTimepicker("getTime"),
                 floating_getTime: $("#timeFloating").bsTimepicker("getTime"),
 
                 input24_val: $("#time24").bsTimepicker("val"),
@@ -167,6 +174,8 @@
                 div24_val: $("#timeDiv24").bsTimepicker("val"),
                 div12_val: $("#timeDiv12").bsTimepicker("val"),
                 empty_val: $("#timeEmpty").bsTimepicker("val"),
+                custom_val: $("#timeCustomLabels").bsTimepicker("val"),
+                quarter_val: $("#timeQuarter").bsTimepicker("val")
                 custom_val: $("#timeCustomLabels").bsTimepicker("val"),
                 floating_val: $("#timeFloating").bsTimepicker("val")
             };
@@ -176,7 +185,8 @@
             $("#time24").bsTimepicker({
                 format: "24h",
                 title: "24h Input",
-                btnClass: "btn btn-outline-secondary"
+                btnClass: "btn btn-outline-secondary",
+                minuteInterval: 1
             });
 
             $("#time12").bsTimepicker({
@@ -223,6 +233,15 @@
                 }
             });
 
+            $("#timeQuarter").bsTimepicker({
+                format: "24h",
+                title: "Quarter Hours",
+                btnClass: "btn btn-outline-dark",
+                btnWidth: "220px",
+                minuteInterval: 15
+            });
+
+            bindTimepickerEvents("#time24, #time12, #timeDiv24, #timeDiv12, #timeEmpty, #timeCustomLabels, #timeQuarter");
             $("#timeFloating").bsTimepicker({
                 format: "24h",
                 title: "Floating Input"
@@ -274,6 +293,8 @@
                     timeDiv12: $("#timeDiv12").bsTimepicker("val"),
                     timeEmpty: $("#timeEmpty").bsTimepicker("val"),
                     timeCustom: $("#timeCustomLabels").bsTimepicker("val"),
+                    timeQuarter: $("#timeQuarter").bsTimepicker("val")
+                    timeCustom: $("#timeCustomLabels").bsTimepicker("val"),
                     timeFloating: $("#timeFloating").bsTimepicker("val")
                 });
             });
@@ -283,6 +304,7 @@
                 $("#time12").bsTimepicker("val", "12:30 PM");
                 $("#timeEmpty").bsTimepicker("val", "12:30");
                 $("#timeCustomLabels").bsTimepicker("val", "12:30");
+                $("#timeQuarter").bsTimepicker("val", "12:30");
                 $("#timeFloating").bsTimepicker("val", "12:30");
 
                 writeOutput("val(...) set", {
@@ -291,6 +313,8 @@
                     timeEmpty: $("#timeEmpty").bsTimepicker("val"),
                     timeCustom: $("#timeCustomLabels").bsTimepicker("val"),
                     timeFloating: $("#timeFloating").bsTimepicker("val")
+                    timeCustom: $("#timeCustomLabels").bsTimepicker("val"),
+                    timeQuarter: $("#timeQuarter").bsTimepicker("val")
                 });
             });
 
@@ -300,6 +324,7 @@
                 $("#timeEmpty").bsTimepicker("val", "");
                 $("#timeCustomLabels").bsTimepicker("val", "");
                 $("#timeFloating").bsTimepicker("val", "");
+                $("#timeQuarter").bsTimepicker("val", "");
 
                 writeOutput("val('') set", {
                     time24: $("#time24").bsTimepicker("val"),
@@ -307,6 +332,8 @@
                     timeEmpty: $("#timeEmpty").bsTimepicker("val"),
                     timeCustom: $("#timeCustomLabels").bsTimepicker("val"),
                     timeFloating: $("#timeFloating").bsTimepicker("val")
+                    timeCustom: $("#timeCustomLabels").bsTimepicker("val"),
+                    timeQuarter: $("#timeQuarter").bsTimepicker("val")
                 });
             });
 

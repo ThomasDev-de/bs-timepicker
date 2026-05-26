@@ -12,6 +12,7 @@
         nameField: null,
         title: "Select time",
         closeOnSelect: false,
+        minuteInterval: 5,
         btnClass: "btn btn-outline-secondary",
         btnWidth: null,
         btnEmptyText: "--:--",
@@ -26,6 +27,11 @@
 
     function pad(num) {
         return String(num).padStart(2, "0");
+    }
+
+    function normalizeMinuteInterval(value) {
+        const interval = parseInt(value, 10);
+        return [1, 5, 10, 15].indexOf(interval) !== -1 ? interval : 5;
     }
 
     function parseTime(value) {
@@ -166,6 +172,7 @@
     function BsTimepicker(element, options) {
         this.$root = $(element);
         this.options = $.extend({}, DEFAULTS, options);
+        this.options.minuteInterval = normalizeMinuteInterval(this.options.minuteInterval);
 
         this.isInput = this.$root.is("input");
         this.isButton = this.$root.is("button");
@@ -194,6 +201,8 @@
 
         this._pointerDragging = false;
         this._pointerId = null;
+        this._pointerSuppressClick = false;
+        this._pointerSuppressClickTimer = null;
         this.isFloatingInput = false;
 
         const rawInitial = this._readInitialRawValue();
@@ -656,46 +665,80 @@
                 return;
             }
 
-            e.preventDefault();
-
-            self._pointerDragging = true;
-            self._pointerId = e.originalEvent.pointerId;
-
-            if (this.setPointerCapture) {
-                try {
-                    this.setPointerCapture(self._pointerId);
-                } catch (err) {}
-            }
-
-            self._updateFromPointerEvent(e, true);
+            self._startPointerDrag(e);
         });
 
         this.$dial.on(`pointermove.${PLUGIN_NAME}.pointer`, function (e) {
-            if (!self._pointerDragging) return;
-            e.preventDefault();
-            self._updateFromPointerEvent(e, false);
+            self._movePointerDrag(e);
         });
 
         this.$dial.on(`pointerup.${PLUGIN_NAME}.pointer pointercancel.${PLUGIN_NAME}.pointer`, function (e) {
-            if (!self._pointerDragging) return;
-
-            e.preventDefault();
-            self._updateFromPointerEvent(e, true);
-
-            if (this.releasePointerCapture && self._pointerId != null) {
-                try {
-                    this.releasePointerCapture(self._pointerId);
-                } catch (err) {}
-            }
-
-            self._pointerDragging = false;
-            self._pointerId = null;
-
-            if (self.view === "minute" && self.options.closeOnSelect) {
-                self._confirmed = true;
-                self.hide();
-            }
+            self._endPointerDrag(e);
         });
+    };
+
+    BsTimepicker.prototype._startPointerDrag = function (e) {
+        if (!this.$dial || !this.$dial.length) return;
+
+        e.preventDefault();
+
+        this._pointerDragging = true;
+        this._pointerId = e.originalEvent.pointerId;
+        this._pointerSuppressClick = true;
+
+        if (this._pointerSuppressClickTimer) {
+            clearTimeout(this._pointerSuppressClickTimer);
+            this._pointerSuppressClickTimer = null;
+        }
+
+        this._disableHandTransition();
+
+        const dialEl = this.$dial[0];
+
+        if (dialEl.setPointerCapture && this._pointerId != null) {
+            try {
+                dialEl.setPointerCapture(this._pointerId);
+            } catch (err) {}
+        }
+
+        this._updateFromPointerEvent(e, false);
+    };
+
+    BsTimepicker.prototype._movePointerDrag = function (e) {
+        if (!this._pointerDragging) return;
+
+        e.preventDefault();
+        this._updateFromPointerEvent(e, false);
+    };
+
+    BsTimepicker.prototype._endPointerDrag = function (e) {
+        if (!this._pointerDragging) return;
+
+        e.preventDefault();
+        this._updateFromPointerEvent(e, true);
+
+        const dialEl = this.$dial && this.$dial.length ? this.$dial[0] : null;
+
+        if (dialEl && dialEl.releasePointerCapture && this._pointerId != null) {
+            try {
+                dialEl.releasePointerCapture(this._pointerId);
+            } catch (err) {}
+        }
+
+        this._pointerDragging = false;
+        this._pointerId = null;
+        this._enableHandTransition();
+
+        if (this.view === "minute" && this.options.closeOnSelect) {
+            this._confirmed = true;
+            this.hide();
+        }
+
+        const self = this;
+        this._pointerSuppressClickTimer = setTimeout(function () {
+            self._pointerSuppressClick = false;
+            self._pointerSuppressClickTimer = null;
+        }, 120);
     };
 
     BsTimepicker.prototype._updateFromPointerEvent = function (e, finalize) {
@@ -757,14 +800,18 @@
         angle = angle + 90;
         if (angle < 0) angle += 360;
 
-        const step = Math.round(angle / 30) % 12;
-
         if (this.view === "minute") {
+            const minuteInterval = this.options.minuteInterval;
+            const minuteSteps = 60 / minuteInterval;
+            const step = Math.round(angle / (360 / minuteSteps)) % minuteSteps;
+
             return {
-                value: (step * 5) % 60,
+                value: (step * minuteInterval) % 60,
                 ring: "outer"
             };
         }
+
+        const step = Math.round(angle / 30) % 12;
 
         if (this.options.format === "12h") {
             let hour12 = step;
@@ -873,29 +920,35 @@
 
         function createNumber(config) {
             const pos = polarToXY(config.position, config.total, config.radius);
+            const marker = config.marker === true;
+            const size = marker ? (config.active ? 20 : 6) : (config.inner ? 28 : 32);
+            const lineHeight = size + "px";
 
             const $el = $("<button>", {
                 type: "button",
                 class: "position-absolute border-0 rounded-circle",
                 text: config.label,
-                "data-value": config.value
+                "data-value": config.value,
+                "aria-label": config.ariaLabel || config.label
             }).css({
                 left: pos.x + "px",
                 top: pos.y + "px",
                 transform: "translate(-50%, -50%)",
-                width: config.inner ? "28px" : "32px",
-                height: config.inner ? "28px" : "32px",
+                width: size + "px",
+                height: size + "px",
                 padding: 0,
-                lineHeight: config.inner ? "28px" : "32px",
-                fontSize: config.inner ? "0.7rem" : "0.8rem",
+                lineHeight: lineHeight,
+                fontSize: marker ? "0" : (config.inner ? "0.7rem" : "0.8rem"),
                 boxShadow: "none",
                 outline: "none",
-                zIndex: 2
+                zIndex: config.active ? 3 : 2,
+                cursor: config.active ? "grab" : "pointer",
+                touchAction: "none"
             });
 
             $el[0].style.setProperty(
                 "background-color",
-                config.active ? "var(--bs-primary, #0d6efd)" : "transparent",
+                config.active ? "var(--bs-primary, #0d6efd)" : (marker ? "rgba(0,0,0,.28)" : "transparent"),
                 "important"
             );
 
@@ -908,16 +961,35 @@
             $el.on(`pointerdown.${PLUGIN_NAME}`, function (e) {
                 e.preventDefault();
                 e.stopPropagation();
+
+                if (config.active) {
+                    self._startPointerDrag(e);
+                }
             });
 
             $el.on(`pointerup.${PLUGIN_NAME}`, function (e) {
                 e.preventDefault();
                 e.stopPropagation();
+
+                if (config.active) {
+                    self._endPointerDrag(e);
+                }
             });
 
             $el.on(`click.${PLUGIN_NAME}`, function (e) {
                 e.preventDefault();
                 e.stopPropagation();
+
+                if (self._pointerSuppressClick) {
+                    self._pointerSuppressClick = false;
+
+                    if (self._pointerSuppressClickTimer) {
+                        clearTimeout(self._pointerSuppressClickTimer);
+                        self._pointerSuppressClickTimer = null;
+                    }
+
+                    return;
+                }
 
                 const value = parseInt($(this).attr("data-value"), 10);
                 const previousState = {
@@ -961,7 +1033,11 @@
                     self._refreshHeader();
                     self._syncToField(true, previousState);
 
-                    setHand(self.state.minute / 5, 12, outerRadius);
+                    setHand(
+                        self.state.minute / self.options.minuteInterval,
+                        60 / self.options.minuteInterval,
+                        outerRadius
+                    );
 
                     setTimeout(function () {
                         self._renderDial();
@@ -1025,19 +1101,30 @@
                 }
             }
         } else {
-            for (let i = 0; i < 60; i += 5) {
+            const minuteInterval = this.options.minuteInterval;
+            const minuteSteps = 60 / minuteInterval;
+
+            for (let i = 0; i < 60; i += minuteInterval) {
+                const marker = minuteInterval === 1 && i % 5 !== 0;
+
+                if (marker && this.state.minute !== i) {
+                    continue;
+                }
+
                 createNumber({
-                    label: pad(i),
+                    label: marker ? "" : pad(i),
                     value: i,
                     active: this.state.minute === i,
-                    position: i / 5,
-                    total: 12,
+                    position: i / minuteInterval,
+                    total: minuteSteps,
                     radius: outerRadius,
-                    inner: false
+                    inner: false,
+                    marker: marker,
+                    ariaLabel: `Minute ${pad(i)}`
                 });
             }
 
-            setHand(this.state.minute / 5, 12, outerRadius);
+            setHand(this.state.minute / minuteInterval, minuteSteps, outerRadius);
         }
     };
 
