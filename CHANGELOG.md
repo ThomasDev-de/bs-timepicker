@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.0.5] - 2026-05-26
+
+### Added
+- Support for `input.form-control` inside Bootstrap `form-floating` containers.
+
+### Changed
+- In `form-floating`, the visible `input` now stays the trigger field while the submitted 24h raw value is written to a generated hidden input.
+
+### Fixed
+- `destroy()` cleanup for `form-floating` no longer removes the whole floating wrapper.
+
 ## [1.0.4] - 2026-05-04
 
 ### Fixed

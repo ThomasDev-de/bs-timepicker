@@ -1,4 +1,4 @@
-# bsTimepicker v1.0.4
+# bsTimepicker v1.0.5
 
 `bsTimepicker` is a jQuery time picker plugin with a Bootstrap-styled trigger and dropdown UI. It supports 12-hour and 24-hour display modes, stores values in a database-friendly 24-hour format, and works with `input` and `div` elements.
 
@@ -10,7 +10,7 @@ The picker uses a circular clock-style selector inspired by mobile alarm/time pi
 - Bootstrap 4/5 styled trigger button and dropdown
 - 12h and 24h display modes
 - Database-friendly value handling via `val()`
-- Supports `input` and `div` root elements
+- Supports `input`, `div`, and `input` inside Bootstrap `form-floating`
 - Optional hidden field support with `nameField`
 - Touch-friendly circular dial with pointer support
 - Public API for show, hide, toggle, set, get, and value access
@@ -85,9 +85,14 @@ $("#appointmentTime").bsTimepicker({
 
 ### Input
 
-When initialized on an `input`, the original input becomes the internal value field and the visible trigger button is rendered after it.
+When initialized on a regular `input`, the original input becomes the internal value field and the visible trigger button is rendered after it.
 
 This is the best choice when the value should already exist in a normal form field.
+
+### Input in `form-floating`
+
+When initialized on an input inside `.form-floating`, the original input stays visible and acts as the picker trigger.  
+The plugin creates an additional hidden input (with the original `name`) to submit the normalized 24-hour value.
 
 ### Div
 

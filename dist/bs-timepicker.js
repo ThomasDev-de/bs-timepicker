@@ -1,5 +1,5 @@
 /**
- * @version 1.0.4
+ * @version 1.0.5
  */
 (function ($) {
     "use strict";
@@ -152,6 +152,11 @@
     BsTimepicker.prototype._renderTriggerLabel = function (value) {
         const text = value == null || value === "" ? this.options.btnEmptyText : value;
 
+        if (this.$trigger && this.$trigger.length && this.$trigger.is("input")) {
+            this.$trigger.val(value == null ? "" : value);
+            return;
+        }
+
         if (this.$triggerText && this.$triggerText.length) {
             this.$triggerText.text(text);
         } else if (this.$trigger && this.$trigger.length) {
@@ -189,6 +194,7 @@
 
         this._pointerDragging = false;
         this._pointerId = null;
+        this.isFloatingInput = false;
 
         const rawInitial = this._readInitialRawValue();
 
@@ -349,6 +355,41 @@
 
     BsTimepicker.prototype._mountIntoDom = function () {
         if (this.isInput) {
+            const $floatingWrap = this.$root.closest(".form-floating");
+
+            if ($floatingWrap.length) {
+                this.isFloatingInput = true;
+                const originalName = this.$root.attr("name");
+
+                this.$valueField = $('<input type="hidden" class="bs-timepicker-hidden">');
+                if (originalName) {
+                    this.$valueField.attr("name", originalName);
+                    this.$root.removeAttr("name");
+                }
+
+                this.$root.addClass("bs-timepicker-trigger").attr({
+                    "data-bs-toggle": "dropdown",
+                    "data-toggle": "dropdown",
+                    "data-bs-auto-close": "outside",
+                    "aria-expanded": "false",
+                    "readonly": "readonly"
+                });
+
+                if (this.options.btnWidth != null) {
+                    this.$root.css("width", this.options.btnWidth);
+                }
+
+                this.$root.after(this.$valueField);
+                this.$panel.appendTo($floatingWrap);
+
+                $floatingWrap.addClass("dropdown bs-timepicker-dropdown");
+
+                this.$trigger = this.$root;
+                this.$triggerText = null;
+                this.$dropdownWrap = $floatingWrap;
+                return;
+            }
+
             this.$root.attr("type", "hidden");
             this.$valueField = this.$root;
             this.$root.after(this.$dropdownWrap);
@@ -1206,8 +1247,14 @@
         }
 
         if (this.isInput) {
-            if (this.$dropdownWrap) this.$dropdownWrap.remove();
-            this.$root.attr("type", "text");
+            if (this.isFloatingInput) {
+                if (this.$panel) this.$panel.remove();
+                if (this.$dropdownWrap) this.$dropdownWrap.removeClass("dropdown bs-timepicker-dropdown");
+                this.$root.removeClass("bs-timepicker-trigger").removeAttr("data-bs-toggle data-toggle data-bs-auto-close aria-expanded readonly");
+            } else {
+                if (this.$dropdownWrap) this.$dropdownWrap.remove();
+                this.$root.attr("type", "text");
+            }
         } else if (this.isDiv) {
             this.$root.empty();
         } else if (this.isButton) {
