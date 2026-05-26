@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
+## dev-main
+
+### Changed
+- Calling plugin methods on non-initialized elements no longer throws an exception.
+- A warning is logged instead: `bsTimepicker ist nicht initialisiert.`
+
 ## [1.0.6] - 2026-05-26
 
 ### Changed
