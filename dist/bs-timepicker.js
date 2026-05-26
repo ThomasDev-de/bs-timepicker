@@ -179,7 +179,7 @@
         this.isDiv = this.$root.is("div");
 
         if (!this.isInput && !this.isButton && !this.isDiv) {
-            throw new Error("bsTimepicker unterstützt nur input, button oder div.");
+            throw new Error("bsTimepicker supports only input, button, or div elements.");
         }
 
         this.uid = Math.random().toString(36).slice(2, 10);
@@ -486,7 +486,7 @@
                 e.stopPropagation();
             });
         } else {
-            throw new Error("Bootstrap Dropdown ist nicht verfügbar. Bitte bootstrap.bundle.min.js (BS5) oder bootstrap.min.js (BS4 + jQuery) laden.");
+            throw new Error("Bootstrap Dropdown is not available. Please load bootstrap.bundle.min.js (BS5) or bootstrap.min.js (BS4 + jQuery).");
         }
 
         this.$trigger.on(`show.bs.dropdown.${PLUGIN_NAME}`, function () {
@@ -1369,7 +1369,7 @@
             if (!instance) {
                 if (typeof option === "string") {
                     if (typeof console !== "undefined" && console.warn) {
-                        console.warn("bsTimepicker ist nicht initialisiert.");
+                        console.warn("bsTimepicker is not initialized.");
                     }
                     return;
                 }
@@ -1379,7 +1379,7 @@
 
             if (typeof option === "string") {
                 if (typeof instance[option] !== "function") {
-                    throw new Error(`Methode "${option}" existiert nicht in ${PLUGIN_NAME}.`);
+                    throw new Error(`Method "${option}" does not exist in ${PLUGIN_NAME}.`);
                 }
 
                 const result = instance[option].apply(instance, args);
