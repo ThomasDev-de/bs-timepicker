@@ -1368,7 +1368,10 @@
 
             if (!instance) {
                 if (typeof option === "string") {
-                    throw new Error("bsTimepicker ist nicht initialisiert.");
+                    if (typeof console !== "undefined" && console.warn) {
+                        console.warn("bsTimepicker ist nicht initialisiert.");
+                    }
+                    return;
                 }
                 instance = new BsTimepicker(this, option);
                 $this.data(PLUGIN_NAME, instance);
