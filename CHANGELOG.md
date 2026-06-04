@@ -2,8 +2,29 @@
 
 All notable changes to this project are documented in this file.
 
-## [1.0.5] - 2026-05-12
+## dev-main
 
+### Changed
+- Calling plugin methods on non-initialized elements no longer throws an exception.
+- A warning is logged instead: `bsTimepicker ist nicht initialisiert.`
+
+## [1.0.6] - 2026-05-26
+
+### Changed
+- Version bump after merge/update to keep release numbering consistent.
+
+## [1.0.5] - 2026-05-26
+
+### Added
+- Support for `input.form-control` inside Bootstrap `form-floating` containers.
+
+### Changed
+- In `form-floating`, the visible `input` now stays the trigger field while the submitted 24h raw value is written to a generated hidden input.
+
+### Fixed
+- `destroy()` cleanup for `form-floating` no longer removes the whole floating wrapper.
+
+--- 
 ### Added
 - New `minuteInterval` option for selectable minute steps of `1`, `5`, `10`, or `15` minutes.
 - Drag support for the active dial pointer so hours and minutes can be adjusted by dragging the selected circle.
