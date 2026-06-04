@@ -253,90 +253,59 @@
             title = `<div class="small d-block text-center text-muted text-body-secondary mb-2">${this.options.title}</div>`;
         }
 
-        const html =
-            `<div class="dropdown bs-timepicker-dropdown d-inline-block" style="${widthStyle}">
-                <button type="button"
-                        class="bs-timepicker-trigger ${this.options.btnClass}"
-                        style="${widthStyle}"
-                        data-bs-toggle="dropdown"
-                        data-toggle="dropdown"
-                        data-bs-auto-close="outside"
-                        aria-expanded="false">
-                    <span class="d-inline-flex align-items-center gap-2" style="gap:.5rem;">
-                        <i class="bs-tp-trigger-icon ${this.options.icons.trigger}"></i>
-                        <span class="bs-tp-trigger-text"></span>
-                    </span>
-                </button>
+        const clearButton = this.options.showClearButton ? [
+            '<button type="button" class="btn btn-link btn-sm text-decoration-none p-0 bs-tp-clear d-flex align-items-center gap-1 mr-2" style="box-shadow:none;gap:.25rem;">',
+            this.options.clearLabel,
+            '</button>'
+        ].join("") : "";
 
-                <div id="${panelId}"
-                     class="dropdown-menu p-2 border-0 shadow rounded rounded-4 bg-white bg-body"
-                     style="width:260px;max-width:calc(100vw - 24px);">
-                    
-                    ${title}
-
-                    <div class="d-flex align-items-center justify-content-center mb-1">
-                        <div class="d-flex align-items-center">
-                            <button type="button"
-                                    class="bs-tp-select-hour btn border-0 rounded-4 d-flex align-items-center justify-content-center"
-                                    style="width:54px;height:44px;padding:0;font-size:1.6rem;line-height:1;letter-spacing:-0.04em;box-shadow:none;">
-                                07
-                            </button>
-
-                            <div class="d-flex align-items-center justify-content-center text-body"
-                                 style="width:14px;height:64px;font-size:1.4rem;line-height:1;">
-                                :
-                            </div>
-
-                            <button type="button"
-                                    class="bs-tp-select-minute btn border-0 rounded-4 d-flex align-items-center justify-content-center"
-                                    style="width:54px;height:44px;padding:0;font-size:1.6rem;line-height:1;letter-spacing:-0.04em;box-shadow:none;">
-                                00
-                            </button>
-                        </div>
-
-                        <div class="bs-tp-meridiem-wrap ml-2 ms-2" style="width:42px;height:64px;"></div>
-                    </div>
-
-                    <div class="bs-tp-dial position-relative rounded-circle mx-auto"
-                         style="width:220px;height:220px;overflow:hidden;touch-action:none;background:rgba(0,0,0,.035);">
-                        
-                        <div class="bs-tp-hand position-absolute"
-                             style="left:50%;top:50%;height:2px;width:0;transform:translateY(-50%);transform-origin:0 50%;background:var(--bs-primary, #0d6efd);z-index:1;pointer-events:none;transition:transform 120ms ease,width 120ms ease;">
-                        </div>
-
-                        <div class="bs-tp-center-dot position-absolute rounded-circle"
-                             style="left:50%;top:50%;transform:translate(-50%, -50%);width:10px;height:10px;background:var(--bs-primary, #0d6efd);z-index:3;">
-                        </div>
-
-                        <div class="bs-tp-items position-absolute w-100 h-100" style="left:0;top:0;z-index:2;"></div>
-                    </div>
-
-                    <div class="d-flex align-items-center justify-content-between gap-3 mt-2 mb-1 mx-2">
-                        <div class="d-flex align-items-center gap-2">
-                            ${this.options.showClearButton ? `
-                            <button type="button"
-                                    class="btn btn-link btn-sm text-decoration-none p-0 bs-tp-clear d-flex align-items-center gap-1 mr-2"
-                                    style="box-shadow:none;gap:.25rem;">
-                                ${this.options.clearLabel}
-                            </button>` : ""}
-                        </div>
-
-                        <div class="d-flex align-items-center gap-3">
-                            <button type="button"
-                                    class="btn btn-link btn-sm text-decoration-none p-0 bs-tp-cancel d-flex align-items-center gap-1 mr-3"
-                                    style="box-shadow:none;gap:.25rem;">
-                                ${this.options.cancelLabel}
-                            </button>
-
-                            <button type="button"
-                                    class="btn btn-link btn-sm text-decoration-none p-0 bs-tp-ok d-flex align-items-center gap-1"
-                                    style="box-shadow:none;gap:.25rem;">
-                                ${this.options.okLabel}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
+        const html = [
+            `<div class="dropdown bs-timepicker-dropdown d-inline-block" style="${widthStyle}">`,
+            `<button type="button" class="bs-timepicker-trigger ${this.options.btnClass}" style="${widthStyle}" data-bs-toggle="dropdown" data-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">`,
+            '<span class="d-inline-flex align-items-center gap-2" style="gap:.5rem;">',
+            `<i class="bs-tp-trigger-icon ${this.options.icons.trigger}"></i>`,
+            '<span class="bs-tp-trigger-text"></span>',
+            '</span>',
+            '</button>',
+            `<div id="${panelId}" class="dropdown-menu p-2 border-0 shadow rounded rounded-4 bg-white bg-body" style="width:260px;max-width:calc(100vw - 24px);">`,
+            title,
+            '<div class="d-flex align-items-center justify-content-center mb-1">',
+            '<div class="d-flex align-items-center">',
+            '<button type="button" class="bs-tp-select-hour btn border-0 rounded-4 d-flex align-items-center justify-content-center" style="width:54px;height:44px;padding:0;font-size:1.6rem;line-height:1;letter-spacing:-0.04em;box-shadow:none;">',
+            '07',
+            '</button>',
+            '<div class="d-flex align-items-center justify-content-center text-body" style="width:14px;height:64px;font-size:1.4rem;line-height:1;">',
+            ':',
+            '</div>',
+            '<button type="button" class="bs-tp-select-minute btn border-0 rounded-4 d-flex align-items-center justify-content-center" style="width:54px;height:44px;padding:0;font-size:1.6rem;line-height:1;letter-spacing:-0.04em;box-shadow:none;">',
+            '00',
+            '</button>',
+            '</div>',
+            '<div class="bs-tp-meridiem-wrap ml-2 ms-2" style="width:42px;height:64px;"></div>',
+            '</div>',
+            '<div class="bs-tp-dial position-relative rounded-circle mx-auto" style="width:220px;height:220px;overflow:hidden;touch-action:none;background:rgba(0,0,0,.035);">',
+            '<div class="bs-tp-hand position-absolute" style="left:50%;top:50%;height:2px;width:0;transform:translateY(-50%);transform-origin:0 50%;background:var(--bs-primary, #0d6efd);z-index:1;pointer-events:none;transition:transform 120ms ease,width 120ms ease;">',
+            '</div>',
+            '<div class="bs-tp-center-dot position-absolute rounded-circle" style="left:50%;top:50%;transform:translate(-50%, -50%);width:10px;height:10px;background:var(--bs-primary, #0d6efd);z-index:3;">',
+            '</div>',
+            '<div class="bs-tp-items position-absolute w-100 h-100" style="left:0;top:0;z-index:2;"></div>',
+            '</div>',
+            '<div class="d-flex align-items-center justify-content-between gap-3 mt-2 mb-1 mx-2">',
+            '<div class="d-flex align-items-center gap-2">',
+            clearButton,
+            '</div>',
+            '<div class="d-flex align-items-center gap-3">',
+            '<button type="button" class="btn btn-link btn-sm text-decoration-none p-0 bs-tp-cancel d-flex align-items-center gap-1 mr-3" style="box-shadow:none;gap:.25rem;">',
+            this.options.cancelLabel,
+            '</button>',
+            '<button type="button" class="btn btn-link btn-sm text-decoration-none p-0 bs-tp-ok d-flex align-items-center gap-1" style="box-shadow:none;gap:.25rem;">',
+            this.options.okLabel,
+            '</button>',
+            '</div>',
+            '</div>',
+            '</div>',
+            '</div>'
+        ].join("");
 
         this.$dropdownWrap = $(html);
         this.$trigger = this.$dropdownWrap.find(".bs-timepicker-trigger");
